@@ -1,0 +1,14 @@
+From: Scanner <scan@example.com>
+To: me@example.com
+Subject: Scan
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mix"
+
+--mix
+Content-Type: application/pdf; name="scan.pdf"
+Content-Disposition: attachment; filename="scan.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0=
+--mix--

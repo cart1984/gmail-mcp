@@ -1,0 +1,42 @@
+From: Shop <shop@example.com>
+To: me@example.com
+Subject: Invoice
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mix"
+
+--mix
+Content-Type: multipart/related; boundary="rel"
+
+--rel
+Content-Type: multipart/alternative; boundary="alt"
+
+--alt
+Content-Type: text/plain; charset=utf-8
+
+Your invoice is attached.
+--alt
+Content-Type: text/html; charset=utf-8
+
+<p>Your invoice is attached. <img src="cid:logo"></p>
+--alt--
+--rel
+Content-Type: image/png; name="logo.png"
+Content-Disposition: inline; filename="logo.png"
+Content-ID: <logo>
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+--rel--
+--mix
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename*=utf-8''Kosten%20M%C3%A4rz.csv
+Content-Transfer-Encoding: base64
+
+aXRlbSxjb3N0Cm11bGNoLDM2Cg==
+--mix
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+
+AAECAw==
+--mix--

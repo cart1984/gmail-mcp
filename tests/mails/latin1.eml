@@ -1,0 +1,9 @@
+From: Bank <bank@example.com>
+To: me@example.com
+Subject: Kontoauszug
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Grüße, Ihr Kontoauszug für März.

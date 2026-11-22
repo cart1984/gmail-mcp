@@ -1,0 +1,12 @@
+From: News <news@example.com>
+To: me@example.com
+Subject: Newsletter
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><head><style>p { color: red; }</style></head><body>
+<h1>November news</h1>
+<p>Read <a href="https://example.com/n">the full story</a>.</p>
+<table><tr><td>Bulbs</td><td>$12</td></tr></table>
+</body></html>

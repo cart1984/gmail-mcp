@@ -1,0 +1,8 @@
+From: x@example.com
+To: me@example.com
+Subject: Odd charset
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=x-made-up
+
+Still readable.

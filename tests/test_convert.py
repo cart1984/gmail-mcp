@@ -1,0 +1,110 @@
+"""File conversion. From graph-mcp's test_graph.py (its second half)."""
+
+from __future__ import annotations
+
+import io
+from pathlib import Path
+
+import pytest
+from openpyxl import Workbook
+
+from gmail_mcp.convert import convert, looks_binary, tidy, tidy_tables, unique_path
+
+
+def test_convert_in_memory_writes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    text = convert(b"<h1>Plan</h1><p>Plant tomatoes</p>", "page.html")
+    assert text.startswith("page.html (") and "Plant tomatoes" in text
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_convert_saves_when_asked(tmp_path: Path) -> None:
+    text = convert(b"hello", "notes.txt", tmp_path / "mail")
+    assert (tmp_path / "mail" / "notes.txt").read_bytes() == b"hello"
+    assert text.startswith(f"Saved to {tmp_path / 'mail' / 'notes.txt'}") and "hello" in text
+
+
+def test_convert_refuses_binary() -> None:
+    # MarkItDown's type detection takes these bytes for text, so they used to come back as raw characters
+    assert convert(b"\x00\x01\x02", "blob.bin").endswith("[Can't convert .bin to text: it looks like a binary file.]")
+
+
+@pytest.mark.parametrize(
+    ("text", "binary"),
+    [
+        ("Grüße aus dem Garten 🌱\n\tTabelle\r\n", False),
+        ("", False),
+        ("ok\x00rest", True),
+        ("\x01\x02\x03\x04 mostly control characters", True),
+    ],
+)
+def test_looks_binary(text: str, binary: bool) -> None:
+    assert looks_binary(text) is binary
+
+
+def test_convert_too_large(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("gmail_mcp.convert.MAX_CONVERT_BYTES", 4)
+    assert convert(b"12345", "big.txt") == "big.txt (5 bytes). Too large to convert to text."
+
+
+def test_same_names_do_not_overwrite(tmp_path: Path) -> None:
+    convert(b"first", "invoice.txt", tmp_path)
+    convert(b"second", "invoice.txt", tmp_path)
+    convert(b"first", "invoice.txt", tmp_path)  # the same file again reuses its path
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["invoice (2).txt", "invoice.txt"]
+    assert (tmp_path / "invoice (2).txt").read_bytes() == b"second"
+
+
+@pytest.mark.parametrize("name", ["../../etc/passwd", "..", "/abs/path.txt", "a\\b.txt"])
+def test_unique_path_stays_in_the_folder(tmp_path: Path, name: str) -> None:
+    assert unique_path(tmp_path, name, b"x").parent == tmp_path
+
+
+def test_tidy_drops_pictures_and_invisible_padding() -> None:
+    picture = "data:image/png;base64," + "iVBORw0KGgo" * 300 + "=="
+    assert tidy(f"Logo [{picture}] here") == "Logo [image] here"
+    assert tidy("Preview͏ ‌͏ ‌­text﻿") == "Preview  text"
+    assert tidy("family 👨‍👩‍👧") == "family 👨‍👩‍👧"  # the emoji joiner stays
+
+
+def test_tables_lose_nan_unnamed_and_empty_rows_and_columns() -> None:
+    sheet = [
+        "## Cars",
+        "| Unnamed: 0 | Unnamed: 1 | Unnamed: 2 | Unnamed: 3 |",
+        "| --- | --- | --- | --- |",
+        "| NaN | Make | Model | NaN |",
+        "| NaN | NaN | NaN | NaN |",
+        "| NaN | Honda | Odyssey \\| EX | NaN |",
+        "",
+        "Notes after the table",
+    ]
+    assert tidy_tables("\n".join(sheet)).splitlines() == [
+        "## Cars",
+        "| Make | Model |",  # no header left: the first row becomes it
+        "| --- | --- |",
+        "| Honda | Odyssey \\| EX |",
+        "",
+        "Notes after the table",
+    ]
+
+
+def test_excel_conversion_is_tidied() -> None:
+    book = Workbook()
+    sheet = book.active
+    assert sheet is not None
+    for row in ([None, None, None], [None, "item", "cost"], [None, "mulch", 36]):
+        sheet.append(row)
+    data = io.BytesIO()
+    book.save(data)
+    text = convert(data.getvalue(), "costs.xlsx")
+    assert "NaN" not in text and "Unnamed" not in text
+    assert "| item | cost |" in text and "| mulch | 36 |" in text
+
+
+@pytest.mark.parametrize(("name", "message"), [("scan.pdf", "probably scanned"), ("blank.txt", "No text in this file")])
+def test_no_text_is_said(name: str, message: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    class Empty:
+        text_content = " \n\n "
+
+    monkeypatch.setattr("markitdown.MarkItDown.convert_stream", lambda *a, **k: Empty())
+    assert message in convert(b"%PDF-1.4", name)

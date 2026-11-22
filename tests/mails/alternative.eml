@@ -1,0 +1,17 @@
+From: Shop <shop@example.com>
+To: me@example.com
+Cc: Sam <sam@example.com>
+Subject: Your order
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt"
+
+--alt
+Content-Type: text/plain; charset=utf-8
+
+Order 42: 3 bags of mulch.
+--alt
+Content-Type: text/html; charset=utf-8
+
+<p>Order <b>42</b>: 3 bags of mulch (HTML).</p>
+--alt--

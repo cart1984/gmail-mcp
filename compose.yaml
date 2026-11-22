@@ -1,0 +1,48 @@
+# gmail-mcp in a container. Your settings go into `.env` next to this file; changes of your own into a
+# `compose.override.yaml`, which Compose merges in.
+#
+#   echo "GMAIL_MCP_CLIENT_ID=<your OAuth client's id>" > .env
+#   echo "GMAIL_MCP_CLIENT_SECRET=<its secret>" >> .env
+#   echo "GMAIL_MCP_TOKEN=$(openssl rand -hex 32)" >> .env
+#   echo "GMAIL_MCP_BIND=<this machine's address on your clients' network>" >> .env
+#   echo "TZ=America/New_York" >> .env        # your time zone, for every date shown and given
+#   chmod 600 .env
+#   docker compose build
+#   docker compose run --rm -p 127.0.0.1:8780:8780 gmail login --no-browser --port 8780 --bind 0.0.0.0
+#                                             # once: open the URL it prints (README step B3)
+#   docker compose up -d
+#   docker compose ps                         # "healthy" only while there's a sign-in
+#
+# Clients connect to http://<GMAIL_MCP_BIND>:8767/mcp with "Authorization: Bearer <token>". Anyone with the token
+# can read your mail: bind to an address on your own network or VPN only, never a public one. It's plain HTTP:
+# use a VPN, or a TLS proxy in front, outside a network you trust.
+services:
+  gmail:
+    build: .
+    image: gmail-mcp:latest
+    restart: unless-stopped
+    environment:
+      GMAIL_MCP_CLIENT_ID: ${GMAIL_MCP_CLIENT_ID:?set GMAIL_MCP_CLIENT_ID in .env}
+      GMAIL_MCP_CLIENT_SECRET: ${GMAIL_MCP_CLIENT_SECRET:?set GMAIL_MCP_CLIENT_SECRET in .env}
+      GMAIL_MCP_TOKEN: ${GMAIL_MCP_TOKEN:?set GMAIL_MCP_TOKEN in .env}
+      GMAIL_MCP_PORT: ${GMAIL_MCP_PORT:-8767}
+      GMAIL_MCP_TIMEZONE: ${TZ:-Etc/UTC}
+      TZ: ${TZ:-Etc/UTC}
+    ports:
+      # Required: publish on one address only, never on every interface.
+      - "${GMAIL_MCP_BIND:?set GMAIL_MCP_BIND in .env to this machine's address on your clients' network}:${GMAIL_MCP_PORT:-8767}:${GMAIL_MCP_PORT:-8767}"
+    volumes:
+      # The sign-in (refresh token, mode 0600): anyone who can read the volume can read your mail.
+      - gmail-data:/data
+    read_only: true
+    tmpfs:
+      # Scratch space for the document converters' libraries; attachments themselves are converted in memory.
+      - /tmp:uid=1000,gid=1000,mode=0700
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+
+volumes:
+  gmail-data:

@@ -1,0 +1,18 @@
+From: Pat <pat@example.com>
+To: me@example.com
+Subject: Invitation: Dentist
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt"
+
+--alt
+Content-Type: text/plain; charset=utf-8
+
+You are invited.
+--alt
+Content-Type: text/calendar; charset=utf-8; method=REQUEST
+
+BEGIN:VCALENDAR
+SUMMARY:Dentist
+END:VCALENDAR
+--alt--

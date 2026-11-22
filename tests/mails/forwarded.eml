@@ -1,0 +1,33 @@
+From: Alex <alex@example.com>
+To: me@example.com
+Subject: Fwd: Original
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: text/plain; charset=utf-8
+
+See below.
+--outer
+Content-Type: message/rfc822
+
+From: Pat <pat@example.com>
+To: alex@example.com
+Subject: Original
+Date: Mon, 09 Nov 2026 12:00:00 -0500
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="inner"
+
+--inner
+Content-Type: text/plain; charset=utf-8
+
+The inner text.
+--inner
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: attachment; filename="inner.txt"
+
+inner attachment
+--inner--
+
+--outer--

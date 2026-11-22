@@ -1,0 +1,22 @@
+From: Kim <kim@example.com>
+To: me@example.com
+Subject: Photos
+Date: Tue, 10 Nov 2026 08:30:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mix"
+
+--mix
+Content-Type: text/plain; charset=utf-8
+
+Part one.
+--mix
+Content-Type: image/jpeg; name="photo.jpg"
+Content-Disposition: inline; filename="photo.jpg"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+--mix
+Content-Type: text/plain; charset=utf-8
+
+Part two.
+--mix--
